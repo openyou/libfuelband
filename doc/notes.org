@@ -1,0 +1,90 @@
+* USB Descriptor
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0        64
+  idVendor           0x11ac 
+  idProduct          0x6565 
+  bcdDevice            1.00
+  iManufacturer           1 
+  iProduct                2 
+  iSerial                 3 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           34
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          4 
+    bmAttributes         0x40
+      (Missing must-be-set bit!)
+      Self Powered
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         3 Human Interface Device
+      bInterfaceSubClass      0 No Subclass
+      bInterfaceProtocol      0 None
+      iInterface              4 
+        HID Device Descriptor:
+          bLength                 9
+          bDescriptorType        33
+          bcdHID               1.10
+          bCountryCode            0 Not supported
+          bNumDescriptors         1
+          bDescriptorType        34 Report
+          wDescriptorLength      93
+         Report Descriptors: 
+           ** UNAVAILABLE **
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval             200
+* Comparing Time Change Packets
+** Raw Data
+Verbose Wireshark dump, so first 64 bytes are the URB.
+
+Out:
+
+0000  80 c4 a9 07 02 88 ff ff  53 02 00 1b 02 00 00 00   ........ S.......
+0010  3b 39 60 4f 00 00 00 00  ee bb 0a 00 8d ff ff ff   ;9`O.... ........
+0020  10 00 00 00 10 00 00 00  21 09 0a 02 00 00 10 00   ........ !.......
+0030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
+0040  0a 0b 78 21 4f 60 37 ee  00 00 70 80 3c 00 00 00   ..x!O`7. ..p.<...
+
+In:
+
+0000  c0 0f a6 07 02 88 ff ff  53 02 00 1b 02 00 00 00   ........ S.......
+0010  3c 39 60 4f 00 00 00 00  aa e0 0c 00 8d ff ff ff   <9`O.... ........
+0020  10 00 00 00 10 00 00 00  21 09 0a 02 00 00 10 00   ........ !.......
+0030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
+0040  0a 0b 36 21 4f 60 37 ed  00 00 70 80 3c 00 00 00   ..6!O`7. ..p.<...
+
+** Analysis
+Useful portions:
+
+Out:
+
+0040  0a 0b 78 21 4f 60 37 ee  00 00 70 80 3c 00 00 00   ..x!O`7. ..p.<...
+
+In:
+
+0040  0a 0b 36 21 4f 60 37 ed  00 00 70 80 3c 00 00 00   ..6!O`7. ..p.<...
+
+URB says we're expecting 16 bytes of data. So bytes 4-7 (0x4f6037ee)
+are big endian unix time. Bytes before and after, ?.
