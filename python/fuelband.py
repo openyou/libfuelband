@@ -45,8 +45,8 @@ def read_feature_report(f, value):
   """
   Reading and writing of FEATURE reports is done directly by kernel ioctl
   """
-  ret = array.array('B', [0]*len(value))
-  result = fcntl.ioctl(f, HIDIOCGFEATURE(len(value)), ret, True)
+  ret = array.array('B', [0x4]*len(value))
+  result = fcntl.ioctl(f, HIDIOCGFEATURE(64), ret, True)
   retstring = ' '.join( ['0x%02x ' % b for b in ret] )
   logging.debug('READ returned  : %d, %s' % (result, retstring))
   return ret
@@ -63,34 +63,20 @@ def main():
   if f == None:
     print("Cannot open device!")
     return 1
-  g = array.array('B', [0x04] + [0 for i in range(63)])
-  # f.write("".join([chr(x) for x in get_account_info]))
-  # r = read_feature_report(f, g)
-  # for c in r:
-  #   sys.stdout.write("0x%.02x " % c)
-  # print ""
+  g = array.array('B', [0 for i in range(63)])
   # #get_account_info = [0x09, 0x02, 0x29, 0x08, 0x00, 0x00, 0x00, 0x00]
   # Get info from band, offset 0
-  get_account_info = array.array('B', [0x09, 0x05, 0x43, 0x19, 0x00, 0x00, 0x00, 0x00])
-  #f.write("".join([chr(x) for x in get_account_info]))
-  write_feature_report(f, get_account_info)
-  #write_feature_report(f, [chr(x) for x in get_account_info])
-  # r = f.read(64)
-  g = array.array('B', [0x04] + [0 for i in range(63)])
-  r = read_feature_report(f, g)
-  for c in r:
-    sys.stdout.write("0x%.02x " % c)
-  print ""
-  # Get info from band, offset 0x37
-  get_account_info = array.array('B', [0x09, 0x05, 0xbb, 0x19, 0x00, 0x00, 0x37, 0x00])
-  f.write("".join([chr(x) for x in get_account_info]))
-  #write_feature_report(f, [chr(x) for x in get_account_info])
-  # r = f.read(64)
-  g = array.array('B', [0x04] + [0 for i in range(63)])
-  r = read_feature_report(f, g)
-  for c in r:
-    sys.stdout.write("0x%.02x " % c)
-  print ""
+  offset = 0
+  while True:
+    get_account_info = array.array('B', [0x09, 0x05, 0x43, 0x19, 0x00, (offset & 0xff00) >> 8, offset & 0xff, 0x00])
+    write_feature_report(f, get_account_info)
+    r = read_feature_report(f, g)
+    for c in r:
+      sys.stdout.write("0x%.02x " % c)
+    print ""
+    offset += 0x37
+    if r[1] != 0x3d:
+      break
   f.close()
   return 0
 
