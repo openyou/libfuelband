@@ -59,7 +59,7 @@ def write_feature_report(f, value):
 
 def main():
   # get_account_info = [0x0a, 0x07, 0xbb, 0x50, 0x37, 0x36, 0x00, 0x00, 0x00]
-  f = open("/dev/hidraw4", "w+b")
+  f = open("/dev/hidraw0", "w+b")
   if f == None:
     print("Cannot open device!")
     return 1
@@ -67,10 +67,12 @@ def main():
   # #get_account_info = [0x09, 0x02, 0x29, 0x08, 0x00, 0x00, 0x00, 0x00]
   # Get info from band, offset 0
   offset = 0
+  final_output = []
   while True:
     get_account_info = array.array('B', [0x09, 0x05, 0x43, 0x19, 0x00, (offset & 0xff00) >> 8, offset & 0xff, 0x00])
     write_feature_report(f, get_account_info)
     r = read_feature_report(f, g)
+    final_output += r[6:]
     for c in r:
       sys.stdout.write("0x%.02x " % c)
     print ""
@@ -78,6 +80,20 @@ def main():
     if r[1] != 0x3d:
       break
   f.close()
+  i = 12
+  offset = 0
+  packet_index = 1
+  # Stupid packet parsing
+  while i < len(final_output):
+    offset = 0
+    while (final_output[i+offset]) != packet_index:
+      offset += 1
+    offset += 1
+    print ["0x%.02x" % x for x in final_output[i:i+offset]]
+    i += offset
+    packet_index += 1
+    if(packet_index == 255): packet_index = 1
+    print "%d %d" % (i, len(final_output))
   return 0
 
 if __name__ == "__main__":
