@@ -1,10 +1,17 @@
-= liblightstone =
+= libfuelband - ARCHIVED =
+
+This library never really made it anywhere in terms of getting info off the fuelband. That doesn't mean you're out of luck though! Other people did the hard work of completely reversing it:
+
+- https://www.evilsocket.net/2015/01/29/nike-fuelband-se-ble-protocol-reversed/
+- https://github.com/evilsocket/nikeplus-fuelband-se-reversed
+
+This repo is now archived and no more work will be happening on it, so hopefully the two links above will be helpful. Good luck!
+
+== Description ==
 
 by Kyle Machulis <kyle@nonpolynomial.com>
 
 Nonpolynomial Labs - http://www.nonpolynomial.com
-
-== Description ==
 
 This is a python (and probably at some point C) based development
 library for the Nike Fuelband. It reads data off the band, as well as
